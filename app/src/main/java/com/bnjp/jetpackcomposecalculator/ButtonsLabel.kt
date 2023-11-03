@@ -9,7 +9,7 @@ val buttonsLabel: Map<String, Set<Int>> = mapOf(
         R.string.point
         ),
     "column2" to setOf(
-      //  R.string.toggleSigne,
+        R.string.toggleSigne,
         R.string.openParenthesis,
         R.string.eight,
         R.string.five,

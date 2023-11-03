@@ -1,67 +1,89 @@
 package com.bnjp.jetpackcomposecalculator.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bnjp.jetpackcomposecalculator.R
 import com.bnjp.jetpackcomposecalculator.buttonsLabel
 import com.bnjp.jetpackcomposecalculator.ui.theme.JetpackComposeCalculatorTheme
+import com.bnjp.jetpackcomposecalculator.ui.theme.dimens
+
 
 @Composable
-fun CalculatorScreen() {
+fun CalculatorScreen(calculatorViewModel: CalculatorViewModel = viewModel()) {
+
+    val calculatorUiState by calculatorViewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    fun showToast(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
+
     Column(
         modifier = Modifier
-            .padding(16.dp),
+            .padding(MaterialTheme.dimens.small1)
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(2f),
-            contentAlignment = Alignment.BottomEnd
-        )
-        {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.End
-            ) {
-                Text(
-                    text = "70 + 30",
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    text = "= 100",
-                    style = MaterialTheme.typography.displayLarge,
-                    fontWeight = FontWeight.ExtraBold
-                )
-            }
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier = Modifier
+                    .weight(2F),
+                contentAlignment = Alignment.BottomEnd
+                ) {
+                Column(
+
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.End,
+
+                ) {
+                    Text(
+                        text = calculatorUiState.operationView,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Normal
+                    )
+                    Text(
+                        text = calculatorUiState.answerView,
+                        style = MaterialTheme.typography.headlineLarge,
+                    )
+                }
+            }
+
+        Spacer(modifier = Modifier.height(MaterialTheme.dimens.small1))
 
         Row(
             verticalAlignment = Alignment.Bottom,
@@ -69,17 +91,20 @@ fun CalculatorScreen() {
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(3F)
+                .padding(MaterialTheme.dimens.extraSmall)
                // .border(width = 1.dp, color = Color.Black)
         ) {
             val buttonsContainerModifier = Modifier
-             //   .border(width = 1.dp, color = Color.Black)
+                .weight(1f)
+               // .border(width = 1.dp, color = Color.Black)
             val defaultButtonModifier = Modifier
-                .size(width = 88.dp, height = 80.dp)
-                .padding(vertical = 1.dp) .graphicsLayer { shadowElevation = 5f; shape = RoundedCornerShape(8.dp) }
+                .width(MaterialTheme.dimens.buttonWidth)
+                .padding(MaterialTheme.dimens.extraSmall)
+                .weight(1f)
 
             val largesButtonsModifier = Modifier
-                .size(width = 88.dp, height = 80.dp)
-                .padding(vertical = 1.dp) .graphicsLayer { shadowElevation = 5f; shape = RoundedCornerShape(8.dp) }
+                .width(MaterialTheme.dimens.buttonWidth)
+                .padding(MaterialTheme.dimens.extraSmall)
                 .weight(2F)
 
             Column(
@@ -87,11 +112,14 @@ fun CalculatorScreen() {
                 modifier = buttonsContainerModifier
             ) {
                 for (label in buttonsLabel["column1"]!!) {
+                    val char = stringResource(label)[0]
                     ButtonElement(
+                        onButtonCliquedClick = {
+                            calculatorViewModel.getCliquedButtonChar(char) },
                         colorButton = if(label == R.string.clear) {
                             MaterialTheme.colorScheme.secondary
                         } else { MaterialTheme.colorScheme.tertiary },
-                        textButton = stringResource(label),
+                        textButton = char,
                         textButtonColor = if(label == R.string.clear) {
                             MaterialTheme.colorScheme.onPrimary
                         } else { MaterialTheme.colorScheme.onTertiary },
@@ -108,8 +136,11 @@ fun CalculatorScreen() {
                 modifier = buttonsContainerModifier
             ) {
                 for (label in buttonsLabel["column2"]!!) {
+                    val char = stringResource(label)[0]
                     ButtonElement(
-                        textButton = stringResource(label),
+                        onButtonCliquedClick = {
+                            calculatorViewModel.getCliquedButtonChar(char) },
+                        textButton = char,
                         modifier = defaultButtonModifier
                     )
                 }
@@ -117,11 +148,16 @@ fun CalculatorScreen() {
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Bottom,
                 modifier = buttonsContainerModifier
+                    .fillMaxHeight()
             ) {
                 for (label in buttonsLabel["column3"]!!) {
+                    val char = stringResource(label)[0]
                     ButtonElement(
-                        textButton = stringResource(label),
+                        onButtonCliquedClick = {
+                            calculatorViewModel.getCliquedButtonChar(char) },
+                        textButton = char,
                         modifier = defaultButtonModifier
                     )
                 }
@@ -132,11 +168,18 @@ fun CalculatorScreen() {
                 modifier = buttonsContainerModifier
             ) {
                 for (label in buttonsLabel["column4"]!!) {
+                    val char = stringResource(label)[0]
                     ButtonElement(
+                        onButtonCliquedClick = {
+                            calculatorViewModel.getCliquedButtonChar(char)
+                            if(label == R.string.equal && calculatorUiState.isError) {
+                                showToast("Erreur")
+                            }
+                                               },
                         colorButton = if(label == R.string.equal) {
                             MaterialTheme.colorScheme.primary
                         } else { MaterialTheme.colorScheme.tertiary },
-                        textButton = stringResource(label),
+                        textButton = char,
                         textButtonColor = if(label == R.string.equal) {
                             MaterialTheme.colorScheme.onPrimary
                         } else { MaterialTheme.colorScheme.onTertiary },
@@ -153,26 +196,27 @@ fun CalculatorScreen() {
 @Composable
 fun ButtonElement(
     modifier: Modifier = Modifier,
-    textButton: String,
-    shape: Shape = RoundedCornerShape(8.dp),
+    textButton: Char,
+    shape: Shape = RoundedCornerShape(4.dp),
     colorButton: Color = MaterialTheme.colorScheme.tertiary,
-    textButtonColor: Color = MaterialTheme.colorScheme.onTertiary
+    textButtonColor: Color = MaterialTheme.colorScheme.onTertiary,
+    onButtonCliquedClick: () -> Unit
 ) {
     Button(
-        onClick = { /*TODO*/ },
+        onClick = onButtonCliquedClick,
         modifier = modifier,
         shape = shape,
         colors = ButtonDefaults.buttonColors(
             containerColor = colorButton
         ),
         elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 10.dp,
-            pressedElevation = 2.dp
+            defaultElevation = MaterialTheme.dimens.small1,
+            pressedElevation = MaterialTheme.dimens.extraSmall
         )
          ){
         Text(
-            text = textButton,
-            style = MaterialTheme.typography.displaySmall,
+            text = textButton.toString(),
+            style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
             color = textButtonColor,
@@ -181,12 +225,34 @@ fun ButtonElement(
 }
 
 @Preview(
-    showBackground = true
+    showBackground = true,
+    device = Devices.NEXUS_5
 )
 @Composable
-fun CalculatorScreenPreview() {
-    JetpackComposeCalculatorTheme {
+fun CalculatorScreenPreview1() {
+    JetpackComposeCalculatorTheme(windowSize = WindowWidthSizeClass.Compact) {
         CalculatorScreen()
     }
-
 }
+//@Preview(
+//    showBackground = true,
+//    device = Devices.PIXEL_3A_XL
+//)
+//@Composable
+//fun CalculatorScreenPreview2() {
+//    JetpackComposeCalculatorTheme(windowSize = WindowWidthSizeClass.Compact) {
+//        CalculatorScreen()
+//    }
+//}
+//
+//@Preview(
+//    showBackground = true,
+//    device = Devices.PIXEL_XL
+//)
+//@Composable
+//fun CalculatorScreenPreview3() {
+//    JetpackComposeCalculatorTheme(windowSize = WindowWidthSizeClass.Compact) {
+//        CalculatorScreen()
+//    }
+//
+//}
