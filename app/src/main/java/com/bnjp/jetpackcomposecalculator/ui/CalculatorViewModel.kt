@@ -26,6 +26,7 @@ class CalculatorViewModel: ViewModel() {
         when(cliquedButtonChar) {
             'C' -> clearAll()
             '=' -> setAnswerView()
+            '←' -> backSpace()
             else -> {
                 setOperationView(char = cliquedButtonChar)
             }
@@ -42,6 +43,15 @@ class CalculatorViewModel: ViewModel() {
             }
         }
         return String(expressionCharArray)
+    }
+
+    private fun backSpace() {
+        val currentValue = _uiState.value.operationView
+        if (currentValue != "0") {
+            _uiState.update { currentState ->
+                currentState.copy(operationView = currentValue.dropLast(1))
+            }
+        }
     }
 
     private fun evalExpression(expression: String): String {
